@@ -8,4 +8,4 @@
 #SBATCH  --mem=40G 
 
 
-for sample in `echo MSDP080 SDPC087`; do ./align_human.sh ./ref_gene/hg38_index ./raw_reads ${sample}; done 
+for sample in `echo MSDP075 MSDP080 SDPC082 SDPC087`; do ./align_human.sh ./ref_gene/hg38_index ./raw_reads ${sample}; done 

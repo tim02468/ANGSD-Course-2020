@@ -6,9 +6,11 @@ df <- read.table("../data/featureCounts_human.txt", header = TRUE, stringsAsFact
 head(df)
 
 names(df) <- c(names(df)[1:6], sprintf("MSDP%s", seq(1:10)), sprintf("SDP%s", seq(1:10)), sprintf("SDPC%s", seq(1:10)))
+# names(df) <- c(names(df)[1:6], sprintf("MSDP%s", seq(1:20)), sprintf("SDPC%s", seq(1:10)))
 row.names(df) <- make.names(df$Geneid)
 
-df <- df[c(names(df)[1:6], sprintf("MSDP%s", seq(1:10)), sprintf("SDP%s", seq(1:10)))]
+df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("MSDP%s", seq(1:10)))]
+# df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("SDP%s", seq(1:10)))]
 
 df <- df[ ,-c(1:6)]
 col_data <- DataFrame(condition = gsub("[0-9]+", "", names(df)), row.names = names(df))
@@ -20,8 +22,6 @@ dim(DESeq.df)
 # remove genes that have no counts
 DESeq.df <- DESeq.df[rowSums(counts(DESeq.df)) > 0, ]
 dim(DESeq.df)
-
-DESeq.df$condition <- relevel(DESeq.df$condition, ref="MSDP")
 
 
 # calculate SFs and add them to the object
@@ -51,10 +51,100 @@ p <- p+geom_point()
 p
 
 # run pcaExplorer
-pcaExplorer::pcaExplorer(dds = DESeq.df, dst = DESeq.rlog)
+# pcaExplorer::pcaExplorer(dds = DESeq.df, dst = DESeq.rlog)
+
+
+# run DESeq test
+DESeq.df <- DESeq(DESeq.df)
+
+DESeq.df$condition <- relevel(DESeq.df$condition, ref="SDPC")
+
+
+DGE.results <- results(DESeq.df, independentFiltering = TRUE, alpha = 0.05)
+# the first line will tell you which comparison was done to achieve the log2FC
+head(DGE.results)
+
+
+hist(DGE.results$padj,
+     col="grey", border="white", xlab="", ylab="", main="frequencies of adj. p-values\n(all genes)", cex = 0.4)
+
+
+DGEgenes <- rownames(subset(DGE.results, padj < 0.05))
+
+
+
+# extract rlog-transformed values into a matrix
+rlog.dge <- DESeq.rlog[DGEgenes,] %>% assay
+
+# show dendrogram and pca using filtered gene
+corr_coeff <- cor(rlog.dge, method = "pearson")
+rlog.norm.counts <- assay(DESeq.df[DGEgenes,], "log.norm.counts")
+as.dist(1-corr_coeff) %>% hclust %>% plot( ., labels = colnames(rlog.norm.counts),main = "rlog transformed read counts")
+
+pca_data <- plotPCA(DESeq.rlog[DGEgenes,], returnData=TRUE)
+
+p <- ggplot(pca_data,aes(x=PC1,y=PC2,color=group))
+p <- p+geom_point()
+p
+
+pcaExplorer::pcaExplorer(dds = DESeq.df[DGEgenes,], dst = DESeq.rlog[DGEgenes,])
+
+
+library(pheatmap)
+
+pheatmap(rlog.dge, scale="none",
+         show_rownames = FALSE, main = "DGE (no scaling)")
+
+pheatmap(rlog.dge, scale="row",
+         show_rownames = FALSE, main = "DGE (row-based z-score)")
+
+plotMA(DGE.results, alpha = 0.05,
+       main = "Test: p.adj.value < 0.05", ylim = c(-4,4))
+
+library(EnhancedVolcano)
+vp1 <- EnhancedVolcano(DGE.results,
+                       lab = rownames(DGE.results), x = 'log2FoldChange',
+                       y = 'padj', pCutoff = 0.05,
+                       title = "SDPC / MSDP") 
+print(vp1)
 
 
 
 
+DGE.results.shrnk <- lfcShrink(DESeq.df, coef = 2, type = "apeglm")
+par(mfrow = c(1,1))
+
+#plotMA(DGE.results, alpha = 0.05, main = "no shrinkage", ylim = c(-4,4))
+
+plotMA(DGE.results.shrnk,
+       alpha = 0.05,
+       main = "with logFC shrinkage", ylim = c(-4,4))
+
+
+vp2 <- EnhancedVolcano(DGE.results.shrnk, lab = rownames(DGE.results.shrnk),
+                       x = 'log2FoldChange',
+                       y = 'padj', pCutoff = 0.05,
+                       title = "with logFC shrinkage")
+library(patchwork)
+vp2
+
+
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+
+keytypes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# list columns that can be retrieved from the annotation data base
+columns(TxDb.Hsapiens.UCSC.hg38.knownGene)
+
+
+
+anno.DGE <- select(TxDb.Hsapiens.UCSC.hg38.knownGene,
+                   keys = DGEgenes, 
+                   keytype="GENEID", 
+                   columns=c("EXONNAME")) 
+
+
+
+
+keys(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
 

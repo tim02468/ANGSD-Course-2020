@@ -1,2 +1,3 @@
 # ANGSD-Course-2020
-Repo for scripts and reports
+Topic: Genetic difference between healthy people and people with major depression disorder
+

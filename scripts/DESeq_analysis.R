@@ -128,23 +128,23 @@ vp2 <- EnhancedVolcano(DGE.results.shrnk, lab = rownames(DGE.results.shrnk),
 library(patchwork)
 vp2
 
+## pass
+# library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-
-keytypes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# keytypes(TxDb.Hsapiens.UCSC.hg38.knownGene)
 # list columns that can be retrieved from the annotation data base
-columns(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# columns(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
 
 
-anno.DGE <- select(TxDb.Hsapiens.UCSC.hg38.knownGene,
-                   keys = DGEgenes, 
-                   keytype="GENEID", 
-                   columns=c("EXONNAME")) 
+#anno.DGE <- select(TxDb.Hsapiens.UCSC.hg38.knownGene,
+#                   keys = DGEgenes, 
+#                   keytype="GENEID", 
+#                   columns=c("EXONNAME")) 
 
 
 
 
-keys(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# keys(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
 

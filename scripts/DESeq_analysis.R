@@ -5,8 +5,10 @@ library(magrittr)
 df <- read.table("../data/featureCounts_human.txt", header = TRUE, stringsAsFactors = FALSE)
 head(df)
 
-names(df) <- c(names(df)[1:6], "MSDP075", "MSDP080", "SDPC082", "SDPC087")
+names(df) <- c(names(df)[1:6], sprintf("MSDP%s", seq(1:10)), sprintf("SDP%s", seq(1:10)), sprintf("SDPC%s", seq(1:10)))
 row.names(df) <- make.names(df$Geneid)
+
+df <- df[c(names(df)[1:6], sprintf("MSDP%s", seq(1:10)), sprintf("SDP%s", seq(1:10)))]
 
 df <- df[ ,-c(1:6)]
 col_data <- DataFrame(condition = gsub("[0-9]+", "", names(df)), row.names = names(df))
@@ -18,6 +20,9 @@ dim(DESeq.df)
 # remove genes that have no counts
 DESeq.df <- DESeq.df[rowSums(counts(DESeq.df)) > 0, ]
 dim(DESeq.df)
+
+DESeq.df$condition <- relevel(DESeq.df$condition, ref="MSDP")
+
 
 # calculate SFs and add them to the object
 DESeq.df <- estimateSizeFactors(DESeq.df)
@@ -47,4 +52,9 @@ p
 
 # run pcaExplorer
 pcaExplorer::pcaExplorer(dds = DESeq.df, dst = DESeq.rlog)
+
+
+
+
+
 

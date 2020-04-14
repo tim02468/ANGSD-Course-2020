@@ -9,8 +9,8 @@ names(df) <- c(names(df)[1:6], sprintf("MSDP%s", seq(1:10)), sprintf("SDP%s", se
 # names(df) <- c(names(df)[1:6], sprintf("MSDP%s", seq(1:20)), sprintf("SDPC%s", seq(1:10)))
 row.names(df) <- make.names(df$Geneid)
 
-df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("MSDP%s", seq(1:10)))]
-# df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("SDP%s", seq(1:10)))]
+#df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("MSDP%s", seq(1:10)))]
+df <- df[c(names(df)[1:6], sprintf("SDPC%s", seq(1:10)), sprintf("SDP%s", seq(1:10)))]
 
 df <- df[ ,-c(1:6)]
 col_data <- DataFrame(condition = gsub("[0-9]+", "", names(df)), row.names = names(df))
